@@ -1,0 +1,160 @@
+{
+	"info": {
+		"_postman_id": "3a3f7698-fedb-49ca-bca6-e98ad582e305",
+		"name": "CS.Card.API",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "GetCart",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{EnvironmentUrl}}/api/Cart/GetCart?userId={{UserId}}",
+					"host": [
+						"{{EnvironmentUrl}}"
+					],
+					"path": [
+						"api",
+						"Cart",
+						"GetCart"
+					],
+					"query": [
+						{
+							"key": "userId",
+							"value": "{{UserId}}"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "AddToCart",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"userId\": {{UserId}},\r\n  \"productId\": {{ProductId}},\r\n  \"quantity\": {{Quantity}}\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{EnvironmentUrl}}/api/Cart/AddToCart",
+					"host": [
+						"{{EnvironmentUrl}}"
+					],
+					"path": [
+						"api",
+						"Cart",
+						"AddToCart"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "UpdateQuantity",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"userId\": {{UserId}},\r\n  \"cartItemId\": {{CartItemId}},\r\n  \"quantity\": 7\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{EnvironmentUrl}}/api/Cart/UpdateQuantity",
+					"host": [
+						"{{EnvironmentUrl}}"
+					],
+					"path": [
+						"api",
+						"Cart",
+						"UpdateQuantity"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "RemoveFromCart",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"userId\": {{UserId}},\r\n  \"cartItemId\": {{CartItemId}}\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{EnvironmentUrl}}/api/Cart/RemoveFromCart",
+					"host": [
+						"{{EnvironmentUrl}}"
+					],
+					"path": [
+						"api",
+						"Cart",
+						"RemoveFromCart"
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "EnvironmentUrl",
+			"value": "https://localhost:32770"
+		},
+		{
+			"key": "UserId",
+			"value": "1"
+		},
+		{
+			"key": "ProductId",
+			"value": "1"
+		},
+		{
+			"key": "CartItemId",
+			"value": "1"
+		},
+		{
+			"key": "Quantity",
+			"value": "5"
+		}
+	]
+}
