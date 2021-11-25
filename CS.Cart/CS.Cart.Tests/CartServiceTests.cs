@@ -1,14 +1,13 @@
 using AutoFixture;
-using CS.Cart.API.MockServices;
 using CS.Cart.API.Services;
-using CS.Cart.Data.Repositories;
 using CS.Shared.Domain.Contracts.Services;
 using CS.Shared.Domain.Models;
 using CS.Shared.Domain.Repositories;
+using Microsoft.Extensions.Logging;
 using Moq;
 using System;
+using System.Threading.Tasks;
 using Xunit;
-using static CS.Shared.Domain.Enums.Enums;
 
 namespace CS.Cart.Tests
 {
@@ -18,6 +17,7 @@ namespace CS.Cart.Tests
         private Mock<ICartRepository> _cartRepositoryMock;
         private Mock<IStockAPIService> _stockAPIServiceMock;
         private Mock<IProductAPIService> _productAPIServiceMock;
+        private readonly Mock<ILogger<CartService>> _logger;
 
         public CartServiceTests()
         {
@@ -25,20 +25,21 @@ namespace CS.Cart.Tests
             _cartRepositoryMock = new Mock<ICartRepository>();
             _stockAPIServiceMock = new Mock<IStockAPIService>();
             _productAPIServiceMock = new Mock<IProductAPIService>();
+            _logger = new Mock<ILogger<CartService>>();
         }
 
         private ICartService CreateSut()
         {
-            return new CartService(_cartRepositoryMock.Object, _stockAPIServiceMock.Object, _productAPIServiceMock.Object);
+            return new CartService(_cartRepositoryMock.Object, _stockAPIServiceMock.Object, _productAPIServiceMock.Object, _logger.Object);
         }
 
         [Theory]
         [InlineData(-1)]
-        public void IfParametersNotValid_GetCardShouldReturnEmptyList(int userId)
+        public async Task IfParametersNotValid_GetCardShouldReturnEmptyList(int userId)
         {
             var cartService = CreateSut();
 
-            var result = cartService.GetCart(userId);
+            var result = await cartService.GetCartAsync(userId);
 
             Assert.Null(result);
         }
@@ -47,32 +48,32 @@ namespace CS.Cart.Tests
         [InlineData(-1, 1, 1)]
         [InlineData(1, -1, 1)]
         [InlineData(1, 1, -1)]
-        public void IfParametersNotValid_AddItemShouldReturnInvalidOperation(int userId, int productId, int quantity)
+        public async Task IfParametersNotValid_AddItemShouldReturnFalse(int userId, int productId, int quantity)
         {
             _stockAPIServiceMock.Setup(m => m.CheckStockForProduct(It.IsAny<int>(), It.IsAny<int>())).Returns(true);
 
             var cartService = CreateSut();
 
-            var result = cartService.AddItemToCart(userId,productId,quantity);
+            var result = await cartService.AddItemToCartAsync(userId,productId,quantity);
 
-            Assert.Equal(CartActionResult.InvalidOperation, result);
+            Assert.False(result);
         }
 
         [Theory]
         [InlineData(-1, 1)]
         [InlineData(1, -1)]
-        public void IfParametersNotValid_RemoveItemShouldReturnInvalidOperation(int userId, int itemId)
+        public async Task IfParametersNotValid_RemoveItemShouldReturnFalse(int userId, int itemId)
         {
             var cartService = CreateSut();
 
-            var result = cartService.RemoveItemFromCart(userId, itemId);
+            var result = await cartService.RemoveItemFromCartAsync(userId, itemId);
 
-            Assert.Equal(CartActionResult.InvalidOperation, result);
+            Assert.False(result);
         }
 
 
         [Fact]
-        public void IfThereIsNotEnoughStock_AddItemShouldReturnOutOfStock()
+        public async Task IfThereIsNotEnoughStock_AddItemShouldReturnFalse()
         {
             int userId = _fixture.Create<int>();
             int productId = _fixture.Create<int>();
@@ -82,27 +83,27 @@ namespace CS.Cart.Tests
 
             var cartService = CreateSut();
 
-            var result = cartService.AddItemToCart(userId, productId, quantity);
+            var result = await cartService.AddItemToCartAsync(userId, productId, quantity);
 
-            Assert.Equal(CartActionResult.OutOfStock, result);
+            Assert.False(result);
         }
 
 
         [Fact]
-        public void IfThereIsNotEnoughStock_UpdateQuantityShouldReturnOutOfStock()
+        public async Task IfThereIsNotEnoughStock_UpdateQuantityShouldReturnFalse()
         {
             int userId = Math.Abs(_fixture.Create<int>());
             int productId = Math.Abs(_fixture.Create<int>());
             int quantity = Math.Abs(_fixture.Create<int>());
 
             _stockAPIServiceMock.Setup(m => m.CheckStockForProduct(It.IsAny<int>(), It.IsAny<int>())).Returns(false);
-            _cartRepositoryMock.Setup(m => m.GetCartItem(It.IsAny<int>(), It.IsAny<int>())).Returns(new CartItem() {UserId = userId, ProductId = productId, Id = It.IsAny<int>() });
+            _cartRepositoryMock.Setup(m => m.GetCartItemAsync(It.IsAny<int>(), It.IsAny<int>())).ReturnsAsync(new CartItem() {UserId = userId, ProductId = productId, Id = It.IsAny<int>() });
             
             var cartService = CreateSut();
 
-            var result = cartService.UpdateCartItemQuantity(userId, productId, quantity);
+            var result = await cartService.UpdateCartItemQuantityAsync(userId, productId, quantity);
 
-            Assert.Equal(CartActionResult.OutOfStock, result);
+            Assert.False(result);
         }
     }
 }

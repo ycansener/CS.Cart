@@ -1,13 +1,8 @@
 ﻿using CS.Cart.API.Models.RequestModels;
 using CS.Shared.Domain.Contracts.Services;
-using CS.Shared.Domain.Models;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using System;
-using System.Collections.Generic;
-using System.Linq;
+using Microsoft.Extensions.Logging;
 using System.Threading.Tasks;
-using static CS.Shared.Domain.Enums.Enums;
 
 namespace CS.Cart.API.Controllers
 {
@@ -16,41 +11,78 @@ namespace CS.Cart.API.Controllers
     public class CartController : ControllerBase
     {
         private readonly ICartService _cartService;
-        private readonly IProductAPIService _productAPIService;
+        private readonly ILogger<CartController> _logger;
 
-        public CartController(ICartService cartService, IProductAPIService productAPIService)
+        public CartController(ICartService cartService, ILogger<CartController> logger)
         {
             _cartService = cartService;
-            _productAPIService = productAPIService;
+            _logger = logger;
         }
 
         [HttpGet]
         [Route("GetCart")]
-        public IEnumerable<ICartItem> GetCart(int userId)
+        public async Task<IActionResult> GetCartAsync(int userId)
         {
-            return _cartService.GetCart(userId);
+            try
+            {
+                var result = await _cartService.GetCartAsync(userId);
+                return Ok(result);
+            }
+            catch (System.Exception ex)
+            {
+                _logger.LogError(ex, "Something went wrong while fetching the cart.");
+                return StatusCode(500);
+            }
         }
 
         [HttpPost]
         [Route("AddToCart")]
-        public CartActionResult AddProductToCart([FromBody] AddProductToCartRequestModel requestModel)
+        public async Task<IActionResult> AddProductToCartAsync([FromBody] AddProductToCartRequestModel requestModel)
         {
-            return _cartService.AddItemToCart(requestModel.UserId, requestModel.ProductId, requestModel.Quantity);
+            try
+            {
+                var result = await _cartService.AddItemToCartAsync(requestModel.UserId, requestModel.ProductId, requestModel.Quantity);
+                return Ok(result);
+            }
+            catch (System.Exception ex)
+            {
+                _logger.LogError(ex, "Something went wrong while adding an item to the cart.");
+                return StatusCode(500);
+            }
         }
 
-        [HttpPost]
+        [HttpPut]
         [Route("UpdateQuantity")]
-        public CartActionResult UpdateQuantity([FromBody] UpdateQuantityRequestModel requestModel)
+        public async Task<IActionResult> UpdateQuantityAsync([FromBody] UpdateQuantityRequestModel requestModel)
         {
-            return _cartService.UpdateCartItemQuantity(requestModel.UserId, requestModel.CartItemId, requestModel.Quantity);
+            try
+            {
+                var result = await _cartService.UpdateCartItemQuantityAsync(requestModel.UserId, requestModel.CartItemId, requestModel.Quantity);
+                return Ok(result);
+            }
+            catch (System.Exception ex)
+            {
+                _logger.LogError(ex, "Something went wrong while updating an item to the cart.");
+                return StatusCode(500);
+            }
         }
 
 
-        [HttpPost]
+        [HttpDelete]
         [Route("RemoveFromCart")]
-        public CartActionResult RemoveItemFromCart([FromBody] RemoveItemFromCartRequestModel requestModel)
+        public async Task<IActionResult> RemoveItemFromCartAsync([FromBody] RemoveItemFromCartRequestModel requestModel)
         {
-            return _cartService.RemoveItemFromCart(requestModel.UserId, requestModel.CartItemId);
+            try
+            {
+                var result = await _cartService.RemoveItemFromCartAsync(requestModel.UserId, requestModel.CartItemId);
+
+                return Ok(result);
+            }
+            catch (System.Exception ex)
+            {
+                _logger.LogError(ex, "Something went wrong while removing an item from the cart.");
+                return StatusCode(500);
+            }
         }
     }
 }

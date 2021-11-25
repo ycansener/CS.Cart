@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace CS.Cart.Data.DataModels
+﻿namespace CS.Cart.Data.DataModels
 {
     public class CartItemEntityMock
     {
